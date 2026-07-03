@@ -1,0 +1,13 @@
+# Собранное приложение (создаётся локально из droplet.applescript)
+Optimize Video.app/
+*.app/
+
+# Видео и промежуточные файлы
+*.mp4
+*.mkv
+*.mov
+*.m4a
+*.webm
+
+# macOS
+.DS_Store
