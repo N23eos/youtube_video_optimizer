@@ -1,20 +1,20 @@
--- Optimize Video — droplet для macOS.
--- Перетаскивай видеофайлы на иконку приложения → выбираешь разрешение → оптимизация.
--- Вызывает optimize.sh, лежащий в той же папке.
+-- Optimize Video — macOS droplet.
+-- Drag video files onto the app icon → pick a resolution → optimization runs.
+-- Calls optimize.sh located in the same folder.
 
 on run
-	display dialog "Перетащи один или несколько видеофайлов на иконку этого приложения, чтобы оптимизировать их для YouTube (480/720/1080p)." buttons {"OK"} default button 1 with title "Optimize Video"
+	display dialog "Drag one or more video files onto this app's icon to optimize them for YouTube (480/720/1080p)." buttons {"OK"} default button 1 with title "Optimize Video"
 end run
 
 on open theItems
-	-- путь к optimize.sh (в той же папке, что и это приложение)
+	-- path to optimize.sh (same folder as this app)
 	set appPosix to POSIX path of (path to me)
 	set projDir to do shell script "dirname " & quoted form of appPosix
 	set optimizer to projDir & "/optimize.sh"
 
-	-- выбор разрешения
-	set resChoice to choose from list {"480p", "720p (рекомендуемое)", "1080p"} ¬
-		default items {"720p (рекомендуемое)"} with prompt "Разрешение для оптимизации:" with title "Optimize Video"
+	-- resolution choice
+	set resChoice to choose from list {"480p", "720p (recommended)", "1080p"} ¬
+		default items {"720p (recommended)"} with prompt "Target resolution:" with title "Optimize Video"
 	if resChoice is false then return
 	set res to "720"
 	if (item 1 of resChoice) starts with "480" then set res to "480"
@@ -35,9 +35,9 @@ on open theItems
 	end repeat
 
 	if (count of failList) is 0 then
-		display notification "Оптимизировано файлов: " & okCount & " (" & res & "p)" with title "Optimize Video" sound name "Glass"
+		display notification "Files optimized: " & okCount & " (" & res & "p)" with title "Optimize Video" sound name "Glass"
 	else
-		set msg to "Готово: " & okCount & ". Ошибки:" & return & (my joinList(failList, return))
+		set msg to "Done: " & okCount & ". Errors:" & return & (my joinList(failList, return))
 		display dialog msg buttons {"OK"} default button 1 with title "Optimize Video" with icon caution
 	end if
 end open

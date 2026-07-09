@@ -1,12 +1,14 @@
 # Roadmap — youtube_video_optimizer
 
-Обёртка вокруг ffmpeg: пресеты сжатия видео для YouTube + drag-and-drop droplet (macOS).
-Статус: v0.1 — рабочий CLI (optimize.sh) и droplet собраны.
+A wrapper around ffmpeg: video compression presets for YouTube + drag-and-drop droplet (macOS).
+Status: v0.1 — working CLI (optimize.sh) and droplet built.
 
-## Вехи
-- [x] CLI `optimize.sh` с флагами -r/-q/-p/-o
+## Milestones
+
+- [x] CLI `optimize.sh` with -r/-q/-p/-o flags
 - [x] macOS drag-and-drop droplet (build_droplet.command, droplet.applescript)
-- [ ] **v1.0** — стабилизировать CLI: прогресс-бар, обработка ошибок, проверка наличия ffmpeg
-- [ ] **v1.1** — пресеты под формат: Shorts/вертикаль 9:16, обычный 16:9
-- [ ] **v1.2** — авто-битрейт по длине/разрешению, отчёт «было → стало» (размер, %)
-- [ ] **v2.0** — простой GUI поверх droplet (выбор пресета до конвертации)
+- [x] Agent support: AGENTS.md + Claude Code skill (`.claude/skills/video-optimize`)
+- [ ] **v1.0** — stabilize the CLI: progress bar, error handling, ffmpeg presence check
+- [ ] **v1.1** — format presets: Shorts/vertical 9:16, regular 16:9
+- [ ] **v1.2** — auto bitrate by duration/resolution, "before → after" report (size, %)
+- [ ] **v2.0** — simple GUI on top of the droplet (preset selection before conversion)

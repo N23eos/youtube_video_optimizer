@@ -40,6 +40,13 @@ Sources: `droplet.applescript` (logic) and `build_droplet.command` (builder).
 - `+faststart` — moves the moov atom to the front, ready for streaming.
 - Output name: `<name>_optimized_<res>p.mp4`.
 
+## For AI agents
+
+The repo ships with agent support out of the box:
+
+- **`AGENTS.md`** — instructions for any coding agent (Claude Code, Cursor, Codex, …): how to run the CLI, flags, behavior guarantees, conventions.
+- **`.claude/skills/video-optimize/`** — a [Claude Code skill](https://code.claude.com/docs/en/skills): ask Claude to "compress this video for YouTube" inside the repo and it will use `optimize.sh` with the right preset.
+
 ## Benchmark
 
 Meditative lofi, 68 min: **6.2 GB → 625 MB** (−89%) at 720p with no visible quality loss. Source files often ship with an inflated bitrate (~12 Mbps for 720p vs. YouTube's recommended ~5 Mbps), which leaves plenty of headroom for compression.

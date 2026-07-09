@@ -1,13 +1,16 @@
-# Собранное приложение (создаётся локально из droplet.applescript)
+# Built app (generated locally from droplet.applescript)
 Optimize Video.app/
 *.app/
 
-# Видео и промежуточные файлы
+# Video and intermediate files
 *.mp4
 *.mkv
 *.mov
 *.m4a
 *.webm
+
+# Personal notes (synced with Todoist, not published)
+TODO.md
 
 # macOS
 .DS_Store

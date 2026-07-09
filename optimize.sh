@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
-# youtube_video_optimizer — ужимает видео для стриминга/загрузки на YouTube.
-# Обёртка вокруг ffmpeg: пресеты 480/720/1080p (дефолт 720p), умные дефолты.
+# youtube_video_optimizer — shrinks videos for streaming/uploading to YouTube.
+# Thin wrapper around ffmpeg: 480/720/1080p presets (default 720p), sane defaults.
 #
-# Требуется ffmpeg:  brew install ffmpeg
+# Requires ffmpeg:  brew install ffmpeg
 #
-# Примеры:
-#   ./optimize.sh video.mp4                 # 720p (дефолт)
+# Examples:
+#   ./optimize.sh video.mp4                 # 720p (default)
 #   ./optimize.sh -r 1080 video.mp4         # 1080p
-#   ./optimize.sh -r 480 -q 25 video.mp4    # 480p, сильнее сжатие
-#   ./optimize.sh *.mp4                     # батч по нескольким файлам
-#   ./optimize.sh -o out/ ~/Videos/*.mkv    # результат в папку out/
+#   ./optimize.sh -r 480 -q 25 video.mp4    # 480p, stronger compression
+#   ./optimize.sh *.mp4                     # batch over multiple files
+#   ./optimize.sh -o out/ ~/Videos/*.mkv    # results into out/ folder
 
 set -euo pipefail
 
-# ---- дефолты ----
+# ---- defaults ----
 RES=720            # 480 | 720 | 1080
-CRF=""             # качество; пусто = авто по разрешению (меньше = лучше/крупнее)
-PRESET=medium      # ultrafast..veryslow — медленнее = меньше файл
-OUTDIR=""          # пусто = рядом с исходником
+CRF=""             # quality; empty = auto per resolution (lower = better/larger)
+PRESET=medium      # ultrafast..veryslow — slower = smaller file
+OUTDIR=""          # empty = next to the source file
 SUFFIX="_optimized"
 
 usage() {
@@ -25,7 +25,7 @@ usage() {
   exit "${1:-0}"
 }
 
-# ---- разбор аргументов ----
+# ---- argument parsing ----
 FILES=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -34,31 +34,31 @@ while [[ $# -gt 0 ]]; do
     -p|--preset)  PRESET="$2"; shift 2;;
     -o|--out)     OUTDIR="$2"; shift 2;;
     -h|--help)    usage 0;;
-    -*)           echo "Неизвестный флаг: $1" >&2; usage 1;;
+    -*)           echo "Unknown flag: $1" >&2; usage 1;;
     *)            FILES+=("$1"); shift;;
   esac
 done
 
-[[ ${#FILES[@]} -eq 0 ]] && { echo "Не указан входной файл." >&2; usage 1; }
-command -v ffmpeg >/dev/null || { echo "ffmpeg не найден. Установи: brew install ffmpeg" >&2; exit 1; }
+[[ ${#FILES[@]} -eq 0 ]] && { echo "No input file given." >&2; usage 1; }
+command -v ffmpeg >/dev/null || { echo "ffmpeg not found. Install it: brew install ffmpeg" >&2; exit 1; }
 
 case "$RES" in
   480)  H=480;  DEF_CRF=23;;
   720)  H=720;  DEF_CRF=23;;
   1080) H=1080; DEF_CRF=22;;
-  *) echo "Разрешение должно быть 480, 720 или 1080 (задано: $RES)" >&2; exit 1;;
+  *) echo "Resolution must be 480, 720 or 1080 (got: $RES)" >&2; exit 1;;
 esac
 [[ -z "$CRF" ]] && CRF=$DEF_CRF
 
 [[ -n "$OUTDIR" ]] && mkdir -p "$OUTDIR"
 
-human() { # байты -> человекочитаемо
+human() { # bytes -> human-readable
   awk -v b="$1" 'BEGIN{u="B KB MB GB TB";split(u,a," ");for(i=1;b>=1024&&i<5;i++)b/=1024;printf "%.1f %s",b,a[i]}'
 }
 
 optimize_one() {
   local IN="$1"
-  [[ -f "$IN" ]] || { echo "Пропуск (нет файла): $IN" >&2; return; }
+  [[ -f "$IN" ]] || { echo "Skipping (no such file): $IN" >&2; return; }
 
   local dir base name out
   dir="$(cd "$(dirname "$IN")" && pwd)"
@@ -66,17 +66,17 @@ optimize_one() {
   if [[ -n "$OUTDIR" ]]; then out="$OUTDIR/${name}${SUFFIX}_${RES}p.mp4"
   else                        out="$dir/${name}${SUFFIX}_${RES}p.mp4"; fi
 
-  # исходная высота — чтобы не апскейлить
+  # source height — so we never upscale
   local sh
   sh="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$IN" 2>/dev/null || echo 0)"
 
-  # видеофильтр: даунскейл до целевой высоты только если исходник больше; ширина кратна 2
+  # video filter: downscale to target height only if the source is taller; width divisible by 2
   local vf=""
   if [[ "$sh" =~ ^[0-9]+$ && "$sh" -gt "$H" ]]; then
     vf="-vf scale=-2:${H}"
   fi
 
-  # аудио: если уже AAC — копируем без потерь, иначе перекодируем в 160k
+  # audio: if already AAC — copy losslessly, otherwise re-encode to 160k
   local acodec
   acodec="$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of csv=p=0 "$IN" 2>/dev/null || echo none)"
   local aargs=(-c:a aac -b:a 160k)
