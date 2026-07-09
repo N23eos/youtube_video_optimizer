@@ -1,45 +1,49 @@
 # youtube_video_optimizer
 
-Ужимает видео для загрузки/стриминга на YouTube. Это тонкая обёртка вокруг **ffmpeg** — вся работа делается им, скрипт лишь фиксирует удобные пресеты и дефолты.
+Shrinks video files for uploading/streaming to YouTube. It's a thin wrapper around **ffmpeg** — ffmpeg does all the work; the script just fixes convenient presets and sensible defaults.
 
-## Установка
+## Install
 
 ```bash
-brew install ffmpeg      # если ещё нет
-chmod +x optimize.sh     # один раз
+brew install ffmpeg      # if you don't have it yet
+chmod +x optimize.sh     # once
 ```
 
-## Использование
+## Usage
 
 ```bash
-./optimize.sh video.mp4              # 720p (дефолт)
+./optimize.sh video.mp4              # 720p (default)
 ./optimize.sh -r 1080 video.mp4      # 1080p
-./optimize.sh -r 480 video.mp4       # 480p (максимальная экономия места)
-./optimize.sh -q 25 video.mp4        # сильнее сжать (выше CRF = меньше файл)
-./optimize.sh -p slow video.mp4      # медленнее энкод, чуть меньше файл
-./optimize.sh -o out/ *.mp4          # батч, результат в папку out/
+./optimize.sh -r 480 video.mp4       # 480p (maximum space saving)
+./optimize.sh -q 25 video.mp4        # compress harder (higher CRF = smaller file)
+./optimize.sh -p slow video.mp4      # slower encode, slightly smaller file
+./optimize.sh -o out/ *.mp4          # batch, output into out/ folder
 ```
 
-Флаги: `-r` разрешение (480/720/1080), `-q` качество CRF (меньше = лучше), `-p` пресет ffmpeg, `-o` папка вывода, `-h` справка.
+Flags: `-r` resolution (480/720/1080), `-q` CRF quality (lower = better), `-p` ffmpeg preset, `-o` output folder, `-h` help.
 
 ## Drag-and-drop (macOS)
 
-Собери приложение один раз — двойной клик по **`build_droplet.command`** создаст рядом `Optimize Video.app`
-(при первом запуске: правый клик → «Открыть», чтобы обойти Gatekeeper).
+Build the app once — double-click **`build_droplet.command`** and it creates `Optimize Video.app` next to it
+(on first launch: right-click → "Open" to get past Gatekeeper).
 
-Дальше просто **перетаскивай видеофайлы на иконку** приложения → выбираешь разрешение (480/720/1080) → готово.
-Приложение можно закинуть в Dock. Внутри оно вызывает `optimize.sh`, так что оба файла должны лежать в одной папке.
+After that, just **drag video files onto the app icon** → pick a resolution (480/720/1080) → done.
+You can drop the app into the Dock. Internally it calls `optimize.sh`, so both files must live in the same folder.
 
-Исходники: `droplet.applescript` (логика) и `build_droplet.command` (сборщик).
+Sources: `droplet.applescript` (logic) and `build_droplet.command` (builder).
 
-## Что делает
+## What it does
 
-- H.264, `-crf` (постоянное качество): 480/720p → 23, 1080p → 22.
-- Даунскейл только если исходник выше цели (не апскейлит).
-- Звук: если уже AAC — копирует без перекодирования (нет потерь и щелчков), иначе перекодирует в AAC 160k.
-- `+faststart` — moov-атом в начало, готово для стриминга.
-- Имя результата: `<имя>_optimized_<res>p.mp4`.
+- H.264, `-crf` (constant quality): 480/720p → 23, 1080p → 22.
+- Downscales only if the source is taller than the target (never upscales).
+- Audio: if already AAC, copies it without re-encoding (no loss or clicks), otherwise re-encodes to AAC 160k.
+- `+faststart` — moves the moov atom to the front, ready for streaming.
+- Output name: `<name>_optimized_<res>p.mp4`.
 
-## Ориентир
+## Benchmark
 
-Meditative lofi 68 мин: **6.2 ГБ → 625 МБ** (−89%) на 720p без видимой потери качества. Исходники часто идут с завышенным битрейтом (~12 Mbps для 720p при рекомендации YouTube ~5 Mbps), отсюда запас для сжатия.
+Meditative lofi, 68 min: **6.2 GB → 625 MB** (−89%) at 720p with no visible quality loss. Source files often ship with an inflated bitrate (~12 Mbps for 720p vs. YouTube's recommended ~5 Mbps), which leaves plenty of headroom for compression.
+
+## License
+
+[MIT](LICENSE)
